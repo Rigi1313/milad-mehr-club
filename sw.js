@@ -1,15 +1,12 @@
 /* باشگاه میلاد مهر — Production PWA Service Worker */
-const VERSION = "2026.09.15.2";
+const VERSION = "2026.09.15.3";
 const CACHE = `milad-mehr-${VERSION}`;
 
 const STATIC = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
-  "./offline.html",
-  "./icons/icon-64.png",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png"
+  "./offline.html"
 ];
 
 const CDN_HOSTS = new Set([
@@ -63,7 +60,6 @@ self.addEventListener("fetch", event => {
 
   const url = new URL(request.url);
 
-  // Never cache Supabase/API/auth traffic.
   if (
     url.origin === self.location.origin &&
     request.mode === "navigate"
@@ -75,7 +71,6 @@ self.addEventListener("fetch", event => {
             const cache = await caches.open(CACHE);
             await cache.put("./index.html", response.clone());
           }
-
           return response;
         })
         .catch(
@@ -94,17 +89,13 @@ self.addEventListener("fetch", event => {
       caches.match(request).then(cached => {
         const refresh = networkThenCache(request).catch(() => null);
 
-        return (
-          cached ||
-          refresh.then(r => r || caches.match("./offline.html"))
-        );
+        return cached || refresh.then(r => r || caches.match("./offline.html"));
       })
     );
 
     return;
   }
 
-  // Cache only known static CDN dependencies.
   if (CDN_HOSTS.has(url.hostname)) {
     event.respondWith(
       caches.match(request).then(
