@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+<meta name="theme-color" content="#0a0f2a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="میلاد مهر">
+<title>باشگاه میلاد مهر</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(145deg,#0a0f2a,#0c122f);font-family:'Segoe UI',Tahoma,sans-serif;color:#eef2ff;direction:rtl;min-height:100vh;padding-bottom:60px}
+.header{background:rgba(15,25,55,.95);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,215,0,.3);padding:10px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1100}
+.logo{display:flex;align-items:center;gap:10px}.logo img{width:42px;height:42px;border-radius:12px;border:1px solid rgba(255,215,0,.3);object-fit:cover}.logo h1{font-size:1.1rem;color:#ffd700}.logo p{font-size:.65rem;color:#8892b0}
+.menu-btn{background:rgba(255,255,240,.15);border:1px solid rgba(255,215,0,.4);border-radius:30px;padding:8px 16px;color:#ffd700;cursor:pointer;font-size:.9rem}
+.sidebar-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:1040;display:none}.sidebar-overlay.active{display:block}
+.sidebar{position:fixed;top:0;right:-280px;width:260px;height:100%;background:rgba(10,20,45,.98);border-left:1px solid rgba(255,215,0,.3);transition:right .3s;z-index:1050;overflow-y:auto;padding:20px 0}.sidebar.open{right:0}
+.sidebar .user{padding:15px;text-align:center;border-bottom:1px solid rgba(255,215,0,.3);margin-bottom:10px}.sidebar .user i{font-size:3rem;color:#ffd966}.sidebar .user h3{color:#ffd700;font-size:1rem;margin:5px 0}.sidebar .user p{color:#8892b0;font-size:.75rem}
+.sidebar a{display:flex;align-items:center;gap:10px;padding:12px 18px;color:#eef2ff;text-decoration:none;font-size:.85rem;cursor:pointer}.sidebar a i{width:20px;color:#ffcd7e;text-align:center}.sidebar a:hover,.sidebar a.active{background:rgba(255,200,100,.15);color:#ffd700}
+.main{padding:16px 12px;max-width:800px;margin:0 auto}.card{background:rgba(20,30,58,.7);backdrop-filter:blur(8px);border-radius:16px;border:1px solid rgba(255,215,0,.2);padding:20px;margin-bottom:16px}.card h2{font-size:1.1rem;color:#ffd700;margin-bottom:15px;display:flex;align-items:center;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 18px;border-radius:10px;border:none;cursor:pointer;font-weight:bold;font-size:.8rem;font-family:inherit}.btn-gold{background:linear-gradient(115deg,#e6b422,#f5c542);color:#1e2a3a}.btn-red{background:linear-gradient(115deg,#c62828,#e53935);color:#fff}.btn-green{background:linear-gradient(115deg,#2e7d32,#43a047);color:#fff}.btn-blue{background:linear-gradient(115deg,#1565c0,#1e88e5);color:#fff}.btn-orange{background:linear-gradient(115deg,#e65100,#ff6d00);color:#fff}.btn-sm{padding:5px 12px;font-size:.7rem}
+input,select,textarea{background:rgba(10,20,40,.7);border:1px solid rgba(255,215,0,.3);border-radius:10px;padding:10px 14px;color:#fff;width:100%;outline:none;font-size:.85rem;font-family:inherit;margin-bottom:10px}select option{background:#0a0f2a;color:#fff}textarea{resize:vertical;min-height:70px}
+table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:10px}th,td{padding:8px 6px;border-bottom:1px solid rgba(255,215,0,.15);text-align:right}th{background:rgba(255,215,0,.15);color:#ffde9e}
+.badge{display:inline-block;padding:3px 10px;border-radius:15px;font-size:.7rem}.badge-green{background:rgba(46,204,113,.2);color:#2ecc71}.badge-red{background:rgba(231,76,60,.2);color:#e74c3c}.badge-gold{background:rgba(255,215,0,.2);color:#ffd700}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:2000;justify-content:center;align-items:center}.modal.active{display:flex}.modal-content{background:#0a0f2a;border-radius:20px;padding:24px;max-width:460px;width:92%;border:1px solid rgba(255,215,0,.5);max-height:90vh;overflow:auto}.modal-content h3{color:#ffd700;margin-bottom:15px}
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.9);border:1px solid #ffd700;color:#ffd700;padding:8px 20px;border-radius:20px;z-index:3000;font-size:.8rem;display:none}.toast.show{display:block}.toast.error{border-color:#e74c3c;color:#e74c3c}.toast.success{border-color:#2ecc71;color:#2ecc71}
+.footer{background:rgba(5,10,25,.95);text-align:center;padding:12px;padding-bottom:max(12px,env(safe-area-inset-bottom));position:fixed;bottom:0;width:100%;font-size:.7rem;border-top:1px solid rgba(255,215,0,.2);color:#8892b0}.flex{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.flex-between{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-top:10px}.stat-card{background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.2);border-radius:12px;padding:15px;text-align:center}.stat-card i{font-size:1.5rem;color:#ffd700}.stat-card .val{font-size:1.4rem;font-weight:bold;color:#ffd700}.stat-card .lbl{color:#8892b0;font-size:.7rem}.install-banner{background:rgba(255,109,0,.15);border:1px solid rgba(255,109,0,.4);border-radius:12px;padding:15px;text-align:center;margin-bottom:15px;display:none}.install-banner.show{display:block}.muted{color:#8892b0;font-size:.78rem}.danger{color:#ff8a80}.photo{width:100%;max-height:260px;object-fit:cover;border-radius:12px;margin-top:8px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.upload-box{border:1px dashed rgba(255,215,0,.35);border-radius:12px;padding:12px;margin:8px 0}.upload-box input{margin:0}.thumbs{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-top:8px}.thumbs img{width:100%;height:90px;object-fit:cover;border-radius:10px}@media(max-width:520px){.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+<header class="header">
+  <div class="logo"><img id="clubLogo" src="" alt="لوگوی میلاد مهر"><div><h1 id="clubNameHeader">باشگاه میلاد مهر</h1><p>مهرآباد</p></div></div>
+  <div class="flex"><button id="logoutBtn" class="btn btn-red btn-sm" onclick="logout()" style="display:none" aria-label="خروج"><i class="fas fa-sign-out-alt"></i></button><button type="button" id="menuBtn" class="menu-btn" aria-label="باز کردن منو"><i class="fas fa-bars"></i></button></div>
+</header>
+<div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+<nav class="sidebar" id="sidebar"><div class="user"><i class="fas fa-user-circle"></i><h3 id="sName">کاربر مهمان</h3><p id="sRole">ورود نکرده</p></div><div id="menu"></div></nav>
+<main class="main" id="main"></main>
+<footer class="footer">© باشگاه فرهنگی ورزشی میلاد مهر</footer>
+<div id="modal" class="modal"><div class="modal-content" id="modalContent" tabindex="-1"></div></div>
+
+<script>
+(() => {
+const SUPABASE_URL = 'https://eaksmkfxpegksggnkcrf.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_GtJv0xaOgQ6s1Hv7RWBWwg_16MFMQ7Q';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+
+let currentUser=null, profile=null, db={players:[],attendances:[],contracts:[],insurances:[],posts:[],postImages:[],club:{}};
+let deferredPrompt=null, lastFocused=null;
+
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const toast=(m,t='')=>{const e=document.getElementById('toast');e.textContent=m;e.className='toast '+t+' show';clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),3200)};
+const roleName={admin:'مدیر اصلی',coach:'مربی',staff:'کادر اجرایی',player:'بازیکن'};
+const todayISO=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
+const faDate=d=>d?new Intl.DateTimeFormat('fa-IR-u-ca-persian',{dateStyle:'short'}).format(new Date(d)):'-';
+
+function toggleSidebar(){const s=document.getElementById('sidebar'),o=document.getElementById('overlay');if(!s||!o)return;const open=s.classList.toggle('open');o.classList.toggle('active',open);document.body.style.overflow=open?'hidden':''}
+
+function openModal(html){
+  lastFocused=document.activeElement;
+  const m=document.getElementById('modal');
+  document.getElementById('modalContent').innerHTML=html;
+  m.classList.add('active');
+  document.body.style.overflow='hidden';
+  const first=m.querySelector('input,select,textarea,button');
+  (first||document.getElementById('modalContent')).focus();
+}
+function closeModal(){
+  document.getElementById('modal').classList.remove('active');
+  document.body.style.overflow='';
+  if(lastFocused&&lastFocused.focus)lastFocused.focus();
+}
+window.closeModal=closeModal; window.toggleSidebar=toggleSidebar;
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const b=document.getElementById('menuBtn'); if(b)b.addEventListener('click',toggleSidebar);
+  const o=document.getElementById('overlay'); if(o)o.addEventListener('click',toggleSidebar);
+});
+
+document.addEventListener('keydown',e=>{
+  const m=document.getElementById('modal');
+  if(m.classList.contains('active')){
+    if(e.key==='Escape'){closeModal();return}
+    if(e.key==='Tab'){
+      const fs=m.querySelectorAll('input,select,textarea,button,[tabindex]:not([tabindex="-1"])');
+      if(!fs.length)return;
+      const first=fs[0],last=fs[fs.length-1];
+      if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
+      else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
+    }
+  }
+});
+
+async function loadProfile(){
+  if(!currentUser)return;
+  const {data,error}=await sb.from('profiles').select('*').eq('id',currentUser.id).maybeSingle();
+  if(error){toast('خطا در دریافت نقش کاربر','error');return}
+  profile=data;
+}
+
+async function loadAll(){
+  const role=profile?.role;
+  let myPlayerId=null;
+  if(role==='player'){
+    const r=await sb.from('players').select('id').eq('user_id',currentUser.id).maybeSingle();
+    myPlayerId=r.data?.id||null;
+  }
+  const jobs=[
+    role==='player' ? sb.from('players').select('*').eq('user_id',currentUser.id)
+                    : sb.from('players').select('*').order('created_at',{ascending:false}),
+    role==='player'&&myPlayerId ? sb.from('attendances').select('*').eq('player_id',myPlayerId)
+                                : sb.from('attendances').select('*').order('training_date',{ascending:false}),
+    role==='player'&&myPlayerId ? sb.from('contracts').select('*').eq('player_id',myPlayerId)
+                                : sb.from('contracts').select('*').order('created_at',{ascending:false}),
+    role==='player'&&myPlayerId ? sb.from('insurances').select('*').eq('player_id',myPlayerId)
+                                : sb.from('insurances').select('*').order('created_at',{ascending:false}),
+    sb.from('posts').select('*').order('created_at',{ascending:false}),
+    sb.from('post_images').select('*').order('created_at',{ascending:false}),
+    sb.from('club_settings').select('*').limit(1).maybeSingle()
+  ];
+  const r=await Promise.all(jobs);
+  db.players=r[0].data||[];db.attendances=r[1].data||[];db.contracts=r[2].data||[];db.insurances=r[3].data||[];db.posts=r[4].data||[];db.postImages=r[5].data||[];db.club=r[6].data||{};
+  if(db.club.club_name)document.getElementById('clubNameHeader').textContent=db.club.club_name;
+  if(db.club.logo_url)document.getElementById('clubLogo').src=db.club.logo_url;
+}
+
+function isStaff(){return ['admin','coach','staff'].includes(profile?.role)}
+function canEdit(){return ['admin','coach'].includes(profile?.role)}
+function isAdmin(){return profile?.role==='admin'}
+
+function updateUI(){
+ let menu='';
+ if(!currentUser) menu=`<a onclick="nav('login')" class="active"><i class="fas fa-sign-in-alt"></i> ورود</a><a onclick="install()"><i class="fas fa-download"></i> نصب اپ</a>`;
+ else{
+  menu=`<a onclick="nav('home')"><i class="fas fa-home"></i> داشبورد</a><a onclick="nav('profile')"><i class="fas fa-building"></i> مشخصات باشگاه</a>`;
+  if(isStaff()) menu+=`<a onclick="nav('players')"><i class="fas fa-users"></i> بازیکنان</a><a onclick="nav('attendance')"><i class="fas fa-clipboard-check"></i> حضور و غیاب</a><a onclick="nav('contracts')"><i class="fas fa-file-contract"></i> قراردادها</a><a onclick="nav('insurance')"><i class="fas fa-shield-alt"></i> بیمه</a><a onclick="nav('posts')"><i class="fas fa-bullhorn"></i> اطلاعیه‌ها</a>`;
+  if(profile?.role==='player') menu+=`<a onclick="nav('myAttendance')"><i class="fas fa-calendar-check"></i> حضورهای من</a><a onclick="nav('myContract')"><i class="fas fa-file-signature"></i> قرارداد من</a><a onclick="nav('myInsurance')"><i class="fas fa-shield-alt"></i> بیمه من</a>`;
+  if(isAdmin()) menu+=`<a onclick="nav('settings')"><i class="fas fa-cog"></i> تنظیمات مدیر</a><a onclick="nav('backup')"><i class="fas fa-database"></i> پشتیبان‌گیری</a>`;
+  menu+=`<a onclick="nav('contact')"><i class="fas fa-headset"></i> ارتباط</a><a onclick="install()"><i class="fas fa-download"></i> نصب اپ</a><a onclick="logout()" style="color:#e74c3c"><i class="fas fa-sign-out-alt"></i> خروج</a>`;
+ }
+ document.getElementById('menu').innerHTML=menu;
+ document.getElementById('sName').textContent=profile?.full_name||currentUser?.email||'کاربر مهمان';
+ document.getElementById('sRole').textContent=profile?roleName[profile.role]:'ورود نکرده';
+ document.getElementById('logoutBtn').style.display=currentUser?'inline-flex':'none';
+}
+
+function nav(page){
+ if(!currentUser&&page!=='login')page='login';
+ let c='';
+ switch(page){
+  case'login':c=renderLogin();break;case'home':c=renderHome();break;case'profile':c=renderProfile();break;
+  case'players':c=renderPlayers();break;case'attendance':c=renderAttendance();break;case'contracts':c=renderContracts();break;
+  case'insurance':c=renderInsurance();break;case'posts':c=renderPosts();break;case'contact':c=renderContact();break;
+  case'settings':c=renderSettings();break;case'backup':c=renderBackup();break;case'myAttendance':c=renderMyAttendance();break;
+  case'myContract':c=renderMyContract();break;case'myInsurance':c=renderMyInsurance();break;default:c=renderHome();
+ }
+ document.getElementById('main').innerHTML=c;
+ if(window.innerWidth<600 && document.getElementById('sidebar').classList.contains('open'))toggleSidebar();
+}
+window.nav=nav;
+
+function renderLogin(){
+ return `<div class="card" style="max-width:430px;margin:30px auto;text-align:center">
+ <img id="loginLogo" src="${esc(db.club?.logo_url||'')}" onerror="this.style.display='none'" style="width:90px;height:90px;object-fit:cover;border-radius:20px;border:1px solid rgba(255,215,0,.35);margin-bottom:10px">
+ <h2 style="justify-content:center">باشگاه میلاد مهر</h2><p class="muted" style="margin-bottom:18px">سامانه جامع مدیریت باشگاه</p>
+ <input id="authEmail" type="email" placeholder="ایمیل">
+ <input id="authPassword" type="password" placeholder="رمز عبور">
+ <button class="btn btn-gold" style="width:100%;justify-content:center;margin:4px 0" onclick="signIn()"><i class="fas fa-sign-in-alt"></i> ورود</button>
+ <button class="btn btn-green" style="width:100%;justify-content:center;margin:4px 0" onclick="openPlayerSignup()"><i class="fas fa-user-plus"></i> ثبت‌نام بازیکن</button>
+ <p class="muted" style="margin-top:12px">دسترسی هر کاربر بر اساس نقش ثبت‌شده در Supabase کنترل می‌شود.</p></div>`;
+}
+window.signIn=async()=>{
+ const email=document.getElementById('authEmail')?.value.trim(),password=document.getElementById('authPassword')?.value;
+ if(!email||!password)return toast('ایمیل و رمز را وارد کنید','error');
+ const {error}=await sb.auth.signInWithPassword({email,password});
+ if(error)return toast(error.message,'error');
+ toast('ورود موفق بود','success');
+};
+window.openPlayerSignup=()=>{
+ openModal(`<h3><i class="fas fa-user-plus"></i> ثبت‌نام بازیکن</h3>
+ <input id="suName" placeholder="نام">
+ <input id="suLast" placeholder="نام خانوادگی">
+ <input id="suEmail" type="email" placeholder="ایمیل">
+ <input id="suPass" type="password" placeholder="رمز عبور">
+ <input id="suPhone" placeholder="شماره موبایل">
+ <div class="grid2"><input id="suBirth" type="date" title="تاریخ تولد"><input id="suJersey" type="number" placeholder="شماره پیراهن"></div>
+ <input id="suCategory" placeholder="رده سنی">
+ <input id="suPosition" placeholder="پست">
+ <p class="muted">پس از ثبت‌نام، حساب و پروفایل بازیکن ساخته می‌شود.</p>
+ <div class="flex" style="justify-content:flex-end"><button class="btn btn-sm" style="background:#222;color:#fff" onclick="closeModal()">انصراف</button><button class="btn btn-green btn-sm" onclick="playerSignup()">ثبت‌نام</button></div>`);
+};
+window.playerSignup=async()=>{
+ const first=document.getElementById('suName')?.value.trim(),last=document.getElementById('suLast')?.value.trim(),email=document.getElementById('suEmail')?.value.trim(),password=document.getElementById('suPass')?.value;
+ if(!first||!last||!email||!password)return toast('نام، نام خانوادگی، ایمیل و رمز الزامی است','error');
+ const meta={full_name:first+' '+last,first_name:first,last_name:last,phone:document.getElementById('suPhone')?.value.trim()||'',birth_date:document.getElementById('suBirth')?.value||null,jersey_number:Number(document.getElementById('suJersey')?.value)||null,category:document.getElementById('suCategory')?.value.trim()||'',position:document.getElementById('suPosition')?.value.trim()||''};
+ const {data,error}=await sb.auth.signUp({email,password,options:{data:meta,emailRedirectTo:location.origin+location.pathname}});
+ if(error)return toast(error.message,'error');
+ closeModal();
+ if(data.session) toast('ثبت‌نام انجام شد؛ وارد شدید','success');
+ else toast('ثبت‌نام انجام شد. اگر تأیید ایمیل فعال است، ایمیل خود را تأیید کنید.','success');
+};
+
+window.logout=async()=>{await sb.auth.signOut();currentUser=null;profile=null;db={players:[],attendances:[],contracts:[],insurances:[],posts:[],postImages:[],club:{}};updateUI();nav('login');toast('خارج شدید','success')};
+
+function renderHome(){
+ const stats=isStaff()?`<div class="stats"><div class="stat-card"><i class="fas fa-users"></i><div class="val">${db.players.length}</div><div class="lbl">بازیکن</div></div><div class="stat-card"><i class="fas fa-clipboard-check"></i><div class="val">${db.attendances.length}</div><div class="lbl">حضور</div></div><div class="stat-card"><i class="fas fa-file-contract"></i><div class="val">${db.contracts.length}</div><div class="lbl">قرارداد</div></div><div class="stat-card"><i class="fas fa-shield-alt"></i><div class="val">${db.insurances.length}</div><div class="lbl">بیمه</div></div></div>`:'';
+ const posts=db.posts.slice(0,3).map(p=>`<div style="padding:10px 0;border-bottom:1px solid rgba(255,215,0,.15)"><strong style="color:#ffd700">${esc(p.title)}</strong><p class="muted">${esc(p.content)}</p>${p.image_url?`<img class="photo" src="${esc(p.image_url)}">`:''}<small class="muted">${faDate(p.created_at)}</small></div>`).join('');
+ return `<div class="card"><h2><i class="fas fa-home"></i> داشبورد</h2><p><span style="color:#ffd700">${esc(profile?.full_name||currentUser?.email||'')}</span> عزیز، خوش آمدید.</p>${stats}</div>${posts?`<div class="card"><h2><i class="fas fa-bullhorn"></i> آخرین اطلاعیه‌ها</h2>${posts}</div>`:''}`;
+}
+
+function renderProfile(){
+ const c=db.club||{};const edit=isStaff();
+ return `<div class="card"><div class="flex-between"><h2><i class="fas fa-building"></i> مشخصات باشگاه</h2>${edit?'<button class="btn btn-blue btn-sm" onclick="editClub()">ویرایش</button>':''}</div>
+ ${c.logo_url?`<img class="photo" style="max-height:180px;object-fit:contain;background:#fff" src="${esc(c.logo_url)}">`:''}
+ <div class="grid2"><p><b>نام:</b> ${esc(c.club_name||'باشگاه میلاد مهر')}</p><p><b>تلفن:</b> ${esc(c.phone||'-')}</p><p><b>آدرس:</b> ${esc(c.address||'-')}</p><p><b>اینستاگرام:</b> ${esc(c.instagram||'-')}</p></div></div>`;
+}
+window.editClub=async()=>{
+ if(!isStaff())return;
+ const c=db.club||{id:1};
+ openModal(`<h3><i class="fas fa-building"></i> مشخصات باشگاه</h3>
+ <input id="clubName" placeholder="نام باشگاه" value="${esc(c.club_name||'باشگاه میلاد مهر')}">
+ <input id="clubPhone" placeholder="تلفن" value="${esc(c.phone||'')}">
+ <input id="clubAddress" placeholder="آدرس" value="${esc(c.address||'')}">
+ <input id="clubInstagram" placeholder="اینستاگرام" value="${esc(c.instagram||'')}">
+ <div class="upload-box"><b>لوگوی باشگاه</b><p class="muted">عکس لوگوی واقعی باشگاه را انتخاب کنید.</p><input id="clubLogoFile" type="file" accept="image/*"></div>
+ <div class="flex" style="justify-content:flex-end"><button class="btn btn-sm" style="background:#222;color:#fff" onclick="closeModal()">انصراف</button><button class="btn btn-green btn-sm" onclick="saveClub()">ذخیره</button></div>`);
+};
+window.saveClub=async()=>{
+ const c=db.club||{id:1};
+ const name=document.getElementById('clubName')?.value.trim()||'باشگاه میلاد مهر';
+ const phone=document.getElementById('clubPhone')?.value.trim()||'';
+ const address=document.getElementById('clubAddress')?.value.trim()||'';
+ const instagram=document.getElementById('clubInstagram')?.value.trim()||'';
+ let logo=c.logo_url||'';
+ const file=document.getElementById('clubLogoFile')?.files?.[0];
+ if(file){const u=await uploadClubImage(file,'logo');if(!u)return;logo=u;}
+ const row={id:c.id||1,club_name:name,phone,address,instagram,logo_url:logo,updated_at:new Date().toISOString()};
+ const {error}=await sb.from('club_settings').upsert(row);
+ if(error)return toast(error.message,'error');
+ closeModal();await loadAll();updateUI();nav('profile');toast('اطلاعات باشگاه ذخیره شد','success');
+};
+
+function renderPlayers(){
+ if(!isStaff())return '<div class="card"><p>دسترسی ندارید.</p></div>';
+ const rows=db.players.map(p=>`<tr><td>${esc(p.first_name)} ${esc(p.last_name)}</td><td>${esc(p.category||'-')}</td><td>${esc(p.position||'-')}</td><td>${esc(p.jersey_number??'-')}</td><td>${esc(p.phone||'-')}</td><td>${canEdit()?`<button class="btn btn-red btn-sm" aria-label="حذف بازیکن" onclick="deletePlayer('${p.id}')"><i class="fas fa-trash" aria-hidden="true"></i></button>`:'-'}</td></tr>`).join('');
+ return `<div class="card"><div class="flex-between"><h2><i class="fas fa-users"></i> بازیکنان (${db.players.length})</h2>${canEdit()?'<button class="btn btn-gold btn-sm" onclick="addPlayer()">+ افزودن</button>':''}</div>${rows?`<div style="overflow:auto"><table><thead><tr><th>نام</th><th>رده</th><th>پست</th><th>شماره</th><th>موبایل</th><th>عملیات</th></tr></thead><tbody>${rows}</tbody></table></div>`:'<p class="muted">بازیکنی ثبت نشده.</p>'}</div>`;
+}
+window.addPlayer=async()=>{
+ if(!canEdit())return;
+ openModal(`<h3><i class="fas fa-user-plus"></i> افزودن بازیکن</h3>
+ <input id="plFirst" placeholder="نام">
+ <input id="plLast" placeholder="نام خانوادگی">
+ <div class="grid2"><input id="plCategory" placeholder="رده سنی"><input id="plPosition" placeholder="پست"></div>
+ <div class="grid2"><input id="plJersey" type="number" placeholder="شماره پیراهن"><input id="plPhone" placeholder="موبایل"></div>
+ <input id="plBirth" type="date" title="تاریخ تولد">
+ <div class="flex" style="justify-content:flex-end"><button class="btn btn-sm" style="background:#222;color:#fff" onclick="closeModal()">انصراف</button><button class="btn btn-green btn-sm" onclick="savePlayer()">ذخیره</button></div>`);
+};
+window.savePlayer=async()=>{
+ const first_name=document.getElementById('plFirst')?.value.trim();
+ const last_name=document.getElementById('plLast')?.value.trim();
+ if(!first_name||!last_name)return toast('نام و نام خانوادگی الزامی است','error');
+ const row={first_name,last_name,
+  category:document.getElementById('plCategory')?.value.trim()||null,
+  position:document.getElementById('plPosition')?.value.trim()||null,
+  jersey_number:Number(document.getElementById('plJersey')?.value)||null,
+  phone:document.getElementById('plPhone')?.value.trim()||null,
+  birth_date:document.getElementById('plBirth')?.value||null};
+ const {error}=await sb.from('players').insert(row);
+ if(error)return toast(error.message,'error');
+ closeModal();await loadAll();nav('players');toast('بازیکن اضافه شد','success');
+};
+window.deletePlayer=async id=>{if(!isAdmin())return toast('فقط مدیر می‌تواند حذف کند','error');if(!confirm('بازیکن حذف شود؟'))return;const {error}=await sb.from('players').delete().eq('id',id);if(error)return toast(error.message,'error');await loadAll();nav('players');toast('حذف شد','success')};
+
+function renderAttendance(){
+ if(!isStaff())return '<div class="card"><p>دسترسی ندارید.</p></div>';
+ const today=todayISO();
+ const rows=db.players.map(p=>{const a=db.attendances.find(x=>x.player_id===p.id&&x.training_date===today);const st=a?.status||'ثبت نشده';return `<div class="flex-between" style="padding:10px 0;border-bottom:1px solid rgba(255,215,0,.15)"><div><b style="color:#ffd700">${esc(p.first_name)} ${esc(p.last_name)}</b><span class="muted"> | ${esc(p.position||'-')}</span> <span class="badge ${st==='حاضر'?'badge-green':st==='غایب'?'badge-red':'badge-gold'}">${st}</span></div>${canEdit()?`<div class="flex"><button class="btn btn-green btn-sm" onclick="markAttendance('${p.id}','حاضر')">حاضر</button><button class="btn btn-red btn-sm" onclick="markAttendance('${p.id}','غایب')">غایب</button></div>`:''}</div>`}).join('');
+ return `<div class="card"><h2><i class="fas fa-clipboard-check"></i> حضور و غیاب</h2><p class="muted">امروز: ${faDate(new Date())}</p>${rows||'<p class="muted">بازیکنی ثبت نشده.</p>'}</div>`;
+}
+window.markAttendance=async(player_id,status)=>{
+ if(!canEdit())return;
+ const date=todayISO();
+ const old=db.attendances.find(x=>x.player_id===player_id&&x.training_date===date);
+ let res=old?await sb.from('attendances').update({status,description:''}).eq('id',old.id):await sb.from('attendances').insert({player_id,training_date:date,status,description:''});
+ if(res.error)return toast(res.error.message,'error');await loadAll();nav('attendance');toast('ثبت شد','success');
+};
+
+function renderContracts(){
+ if(!isStaff())return '<div class="card"><p>دسترسی ندارید.</p></div>';
+ const rows=db.contracts.map(c=>{const p=db.players.find(x=>x.id===c.player_id);return `<tr><td>${esc(p?`${p.first_name} ${p.last_name}`:c.player_id)}</td><td>${esc(c.start_date||'-')}</td><td>${esc(c.end_date||'-')}</td><td>${esc(c.details||'-')}</td>${canEdit()?`<td><button class="btn btn-red btn-sm" onclick="deleteRow('contracts','${c.id}','contracts')">حذف</button></td>`:'<td>-</td>'}</tr>`}).join('');
+ return `<div class="card"><div class="flex-between"><h2><i class="fas fa-file-contract"></i> قراردادها</h2>${canEdit()?'<button class="btn btn-gold btn-sm" onclick="addContract()">+ افزودن</button>':''}</div>${rows?`<div style="overflow:auto"><table><thead><tr><th>بازیکن</th><th>شروع</th><th>پایان</th><th>جزئیات</th><th>عملیات</th></tr></thead><tbody>${rows}</tbody></table></div>`:'<p class="muted">قراردادی ثبت نشده.</p>'}</div>`;
+}
+window.addContract=async()=>{
+ if(!canEdit())return;
+ if(!db.players.length)return toast('ابتدا بازیکن ثبت کنید','error');
+ const opts=db.players.map(p=>`<option value="${p.id}">${esc(p.first_name+' '+p.last_name)}</option>`).join('');
+ openModal(`<h3><i class="fas fa-file-contract"></i> افزودن قرارداد</h3>
+ <select id="ctPlayer">${opts}</select>
+ <div class="grid2"><input id="ctStart" type="date" title="شروع"><input id="ctEnd" type="date" title="پایان"></div>
+ <textarea id="ctDetails" placeholder="جزئیات"></textarea>
+ <div class="flex" style="justify-content:flex-end"><button class="btn btn-sm" style="background:#222;color:#fff" onclick="closeModal()">انصراف</button><button class="btn btn-green btn-sm" onclick="saveContract()">ذخیره</button></div>`);
+};
+window.saveContract=async()=>{
+ const player_id=document.getElementById('ctPlayer')?.value;
+ if(!player_id)return toast('بازیکن را انتخاب کنید','error');
+ const row={player_id,
+  start_date:document.getElementById('ctStart')?.value||null,
+  end_date:document.getElementById('ctEnd')?.value||null,
+  details:document.getElementById('ctDetails')?.value.trim()||null};
+ const {error}=await sb.from('contracts').insert(row);
+ if(error)return toast(error.message,'error');
+ closeModal();await loadAll();nav('contracts');toast('قرارداد ثبت شد','success');
+};
+
+function renderInsurance(){
+ if(!isStaff())return '<div class="card"><p>دسترسی ندارید.</p></div>';
+ const rows=db.insurances.map(i=>{const p=db.players.find(x=>x.id===i.player_id);return `<tr><td>${esc(p?`${p.first_name} ${p.last_name}`:i.player_id)}</td><td>${esc(i.insurance_number||'-')}</td><td>${esc(i.start_date||'-')}</td><td>${esc(i.end_date||'-')}</td><td>${esc(i.details||'-')}</td>${canEdit()?`<td><button class="btn btn-red btn-sm" onclick="deleteRow('insurances','${i.id}','insurance')">حذف</button></td>`:'<td>-</td>'}</tr>`}).join('');
+ return `<div class="card"><div class="flex-between"><h2><i class="fas fa-shield-alt"></i> بیمه</h2>${canEdit()?'<button class="btn btn-gold btn-sm" onclick="addInsurance()">+ افزودن</button>':''}</div>${rows?`<div style="overflow:auto"><table><thead><tr><th>بازیکن</th><th>شماره بیمه</th><th>شروع</th><th>پایان</th><th>جزئیات</th><th>عملیات</th></tr></thead><tbody>${rows}</tbody></table></div>`:'<p class="muted">بیمه‌ای ثبت نشده.</p>'}</div>`;
+}
+window.addInsurance=async()=>{
+ if(!canEdit())return;
+ if(!db.players.length)return toast('ابتدا بازیکن ثبت کنید','error');
+ const opts=db.players.map(p=>`<option value="${p.id}">${esc(p.first_name+' '+p.last_name)}</option>`).join('');
+ openModal(`<h3><i class="fas fa-shield-alt"></i> افزودن بیمه</h3>
+ <select id="insPlayer">${opts}</select>
+ <input id="insNumber" placeholder="شماره بیمه">
+ <div class="grid2"><input id="insStart" type="date" title="شروع"><input id="insEnd" type="date" title="پایان"></div>
+ <textarea id="insDetails" placeholder="جزئیات"></textarea>
+ <div class="flex" style="justify-content:flex-end"><button class="btn btn-sm" style="background:#222;color:#fff" onclick="closeModal()">انصراف</button><button class="btn btn-green btn-sm" onclick="saveInsurance()">ذخیره</button></div>`);
+};
+window.saveInsurance=async()=>{
+ const player_id=document.getElementById('insPlayer')?.value;
+ if(!player_id)return toast('بازیکن را انتخاب کنید','error');
+ const row={player_id,
+  insurance_number:document.getElementById('insNumber')?.value.trim()||null,
+  start_date:document.getElementById('insStart')?.value||null,
+  end_date:document.getElementById('insEnd')?.value||null,
+  details:document.getElementById('insDetails')?.value.trim()||null};
+ const {error}=await sb.from('insurances').insert(row);
+ if(error)return toast(error.message,'error');
+ closeModal();await loadAll();nav('insurance');toast('بیمه ثبت شد','success');
+};
+window.deleteRow=async(table,id,page)=>{if(!canEdit())return;const {error}=await sb.from(table).delete().eq('id',id);if(error)return toast(error.message,'error');await loadAll();nav(page);toast('حذف شد','success')};
+
+async function uploadClubImage(file,folder='posts'){
+ if(!file)return null;
+ const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'');
+ const path=`${folder}/${crypto.randomUUID()}.${ext||'jpg'}`;
+ const {error}=await sb.storage.from('club-images').upload(path,file,{upsert:false,contentType:file.type||'image/jpeg'});
+ if(error){toast('آپلود عکس: '+error.message,'error');return null}
+ const {data}=sb.storage.from('club-images').getPublicUrl(path);
+ return data.publicUrl;
+}
+async function deleteStorageImage(url){
+ if(!url)return;
+ const marker='/storage/v1/object/public/club-images/';
+ const i=url.indexOf(marker);
+ if(i<0)return;
+ const path=decodeURIComponent(url.slice(i+marker.length));
+ await sb.storage.from('club-images').remove([path]);
+}
+function postImageList(postId){
+ return db.postImages.filter(x=>x.post_id===postId).map(x=>x.image_url).filter(Boolean);
+}
+function renderPosts(){
+ if(!isStaff())return '<div class="card"><p>دسترسی ندارید.</p></div>';
+ const list=db.posts.map(p=>{
+  const imgs=postImageList(p.id);
+  if(p.image_url && !imgs.includes(p.image_url))imgs.unshift(p.image_url);
+  return `<div style="padding:12px 0;border-bottom:1px solid rgba(255,215,0,.15)">
+   <div class="flex-between"><strong style="color:#ffd700">${esc(p.title)}</strong>${canEdit()?`<button class="btn btn-red btn-sm" onclick="deletePost('${p.id}')">حذف</button>`:''}</div>
+   <p class="muted" style="margin-top:6px">${esc(p.content)}</p>
+   ${imgs.length?`<div class="thumbs">${imgs.map(u=>`<img src="${esc(u)}" alt="عکس اطلاعیه" loading="lazy">`).join('')}</div>`:''}
+   <small class="muted">${faDate(p.created_at)}</small>
+  </div>`;
+ }).join('');
+ return `<div class="card"><div class="flex-between"><h2><i class="fas fa-bullhorn"></i> اطلاعیه‌ها</h2>${canEdit()?'<button class="btn btn-gold btn-sm" onclick="addPost()">+ جدید</button>':''}</div>${list||'<p class="muted">اطلاعیه‌ای ثبت نشده.</p>'}</div>`;
+}
+window.addPost=async()=>{
+ if(!canEdit())return;
+ openModal(`<h3><i class="fas fa-bullhorn"></i> اطلاعیه جدید</h3>
+ <input id="postTitle" placeholder="عنوان">
+ <textarea id="postContent" placeholder="متن اطلاعیه"></textarea>
+ <input id="postCategory" placeholder="دسته‌بندی" value="عمومی">
+ <div class="upload-box"><b>عکس اطلاعیه</b><p class="muted">می‌توانید چند عکس انتخاب کنید.</p><input id="postFiles" type="file" accept="image/*" multiple></div>
+ <div class="flex" style="justify-content:flex-end"><button class="btn btn-sm" style="background:#222;color:#fff" onclick="closeModal()">انصراف</button><button class="btn btn-green btn-sm" onclick="savePost()">ثبت اطلاعیه</button></div>`);
+};
+window.savePost=async()=>{
+ const title=document.getElementById('postTitle')?.value.trim();
+ const content=document.getElementById('postContent')?.value.trim()||'';
+ const category=document.getElementById('postCategory')?.value.trim()||'عمومی';
+ const files=[...(document.getElementById('postFiles')?.files||[])];
+ if(!title)return toast('عنوان را وارد کنید','error');
+ const {data,error}=await sb.from('posts').insert({title,content,category,image_url:null}).select().single();
+ if(error)return toast(error.message,'error');
+ let firstUrl=null;
+ for(const file of files){const url=await uploadClubImage(file,'posts');if(url){if(!firstUrl)firstUrl=url;const r=await sb.from('post_images').insert({post_id:data.id,image_url:url});if(r.error)await deleteStorageImage(url);}}
+ if(firstUrl){const u=await sb.from('posts').update({image_url:firstUrl}).eq('id',data.id);if(u.error)console.warn(u.error)}
+ closeModal();await loadAll();nav('posts');toast('اطلاعیه با موفقیت ثبت شد','success');
+};
+window.deletePost=async id=>{
+ if(!isAdmin())return toast('فقط مدیر اصلی می‌تواند اطلاعیه را حذف کند','error');
+ if(!confirm('اطلاعیه و عکس‌های آن حذف شود؟'))return;
+ const imgs=postImageList(id);
+ const {error}=await sb.from('posts').delete().eq('id',id);
+ if(error)return toast(error.message,'error');
+ for(const u of imgs)await deleteStorageImage(u);
+ await loadAll();nav('posts');toast('اطلاعیه حذف شد','success');
+};
+
+function renderMyAttendance(){
+ const p=db.players.find(x=>x.user_id===currentUser?.id);if(!p)return `<div class="card"><h2>حضورهای من</h2><p class="muted">هنوز پروفایل بازیکن به حساب شما متصل نشده است.</p></div>`;
+ const rows=db.attendances.filter(x=>x.player_id===p.id).map(a=>`<div class="flex-between" style="padding:8px 0;border-bottom:1px solid rgba(255,215,0,.15)"><span>${esc(a.training_date)}</span><span class="badge ${a.status==='حاضر'?'badge-green':'badge-red'}">${esc(a.status)}</span></div>`).join('');
+ return `<div class="card"><h2><i class="fas fa-calendar-check"></i> حضورهای من</h2>${rows||'<p class="muted">موردی ثبت نشده.</p>'}</div>`;
+}
+function renderMyContract(){
+ const p=db.players.find(x=>x.user_id===currentUser?.id),c=p&&db.contracts.find(x=>x.player_id===p.id);
+ return `<div class="card"><h2><i class="fas fa-file-signature"></i> قرارداد من</h2>${c?`<p><b>شروع:</b> ${esc(c.start_date||'-')}</p><p><b>پایان:</b> ${esc(c.end_date||'-')}</p><p><b>جزئیات:</b> ${esc(c.details||'-')}</p>`:'<p class="muted">قراردادی ثبت نشده.</p>'}</div>`;
+}
+function renderMyInsurance(){
+ const p=db.players.find(x=>x.user_id===currentUser?.id),i=p&&db.insurances.find(x=>x.player_id===p.id);
+ return `<div class="card"><h2><i class="fas fa-shield-alt"></i> بیمه من</h2>${i?`<p><b>شماره بیمه:</b> ${esc(i.insurance_number||'-')}</p><p><b>شروع:</b> ${esc(i.start_date||'-')}</p><p><b>پایان:</b> ${esc(i.end_date||'-')}</p><p><b>جزئیات:</b> ${esc(i.details||'-')}</p>`:'<p class="muted">بیمه‌ای ثبت نشده.</p>'}</div>`;
+}
+function renderContact(){return `<div class="card"><h2><i class="fas fa-headset"></i> ارتباط با مدیریت</h2><p class="muted">برای ارتباط با مدیریت باشگاه از اطلاعات تماس زیر استفاده کنید.</p><hr><p><b>تلفن:</b> ${esc(db.club?.phone||'-')}</p><p><b>آدرس:</b> ${esc(db.club?.address||'-')}</p><p><b>اینستاگرام:</b> ${esc(db.club?.instagram||'-')}</p></div>`}
+
+function renderSettings(){
+ if(!isAdmin())return '<div class="card"><p>فقط مدیر اصلی دسترسی دارد.</p></div>';
+ return `<div class="card"><h2><i class="fas fa-cog"></i> تنظیمات مدیر</h2>
+ <button class="btn btn-blue" onclick="adminRecovery()"><i class="fas fa-key"></i> ارسال لینک بازیابی رمز مدیر</button>
+ <p class="muted" style="margin-top:10px">رمزها و کلیدهای حساس داخل HTML ذخیره نمی‌شوند.</p>
+ </div>`;
+}
+window.adminRecovery=async()=>{
+ const {data:{user}}=await sb.auth.getUser();
+ if(!user)return toast('ابتدا به عنوان مدیر وارد شوید','error');
+ const {data:p}=await sb.from('profiles').select('role').eq('id',user.id).maybeSingle();
+ if(p?.role!=='admin')return toast('این بخش فقط برای مدیر اصلی است','error');
+ const {error}=await sb.auth.resetPasswordForEmail(user.email,{redirectTo:location.origin+location.pathname});
+ if(error)return toast(error.message,'error');
+ toast('لینک بازیابی به ایمیل مدیر ارسال شد','success');
+};
+
+function renderBackup(){if(!isAdmin())return '<div class="card"><p>فقط مدیر اصلی دسترسی دارد.</p></div>';return `<div class="card"><h2><i class="fas fa-database"></i> پشتیبان‌گیری</h2><button class="btn btn-blue" onclick="exportBackup()">دانلود اطلاعات قابل مشاهده</button><p class="muted" style="margin-top:10px">رمز عبور یا Secret Key هرگز در پشتیبان قرار نمی‌گیرد.</p></div>`}
+window.exportBackup=()=>{const d={players:db.players,attendances:db.attendances,contracts:db.contracts,insurances:db.insurances,posts:db.posts,club:db.club,created_at:new Date().toISOString()};const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='milad-mehr-backup.json';a.click();URL.revokeObjectURL(a.href);toast('پشتیبان دانلود شد','success')};
+
+window.install=()=>{if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(r=>{if(r.outcome==='accepted')toast('اپ نصب شد','success');deferredPrompt=null})}else toast('از منوی مرورگر «افزودن به صفحه اصلی» را بزنید','success')};
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e});
+
+// ======== boot ========
+if(SUPABASE_URL.includes('PASTE_')||SUPABASE_PUBLISHABLE_KEY.includes('PASTE_')){
+ document.getElementById('main').innerHTML='<div class="card"><h2><i class="fas fa-plug"></i> اتصال Supabase هنوز تنظیم نشده</h2></div>';
+}else{
+ let booted=false;
+ sb.auth.onAuthStateChange(async(event,session)=>{
+   if(event==='SIGNED_OUT'){
+     currentUser=null;profile=null;
+     db={players:[],attendances:[],contracts:[],insurances:[],posts:[],postImages:[],club:{}};
+     updateUI();nav('login');
+     return;
+   }
+   if(!booted&&(event==='INITIAL_SESSION'||event==='SIGNED_IN')){
+     booted=true;
+     currentUser=session?.user||null;
+     if(currentUser){await loadProfile();await loadAll();updateUI();nav('home')}
+     else{updateUI();nav('login')}
+   }
+ });
+}
+})();
+</script>
+</body>
+</html>
